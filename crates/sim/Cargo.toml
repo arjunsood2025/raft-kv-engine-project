@@ -1,0 +1,13 @@
+[package]
+name = "sim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+raft = { path = "../raft" }
+kvsm = { path = "../kvsm" }
+
+[[bin]]
+name = "simulate"
+path = "src/bin/simulate.rs"

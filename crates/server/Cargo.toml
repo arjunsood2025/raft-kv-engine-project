@@ -1,0 +1,22 @@
+[package]
+name = "server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+serde.workspace = true
+bincode.workspace = true
+tokio.workspace = true
+raft = { path = "../raft" }
+kvsm = { path = "../kvsm" }
+storage = { path = "../storage" }
+proto = { path = "../proto" }
+
+[dev-dependencies]
+tempfile.workspace = true
+client = { path = "../client" }
+
+[[bin]]
+name = "kvd"
+path = "src/bin/kvd.rs"

@@ -1,0 +1,27 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/storage",
+    "crates/raft",
+    "crates/kvsm",
+    "crates/proto",
+    "crates/sim",
+    "crates/server",
+    "crates/client",
+    "crates/bench",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+bincode = "1.3"
+crc32fast = "1"
+tokio = { version = "1", features = ["rt-multi-thread", "net", "io-util", "time", "sync", "macros", "signal"] }
+tempfile = "3"
+
+[profile.release]
+debug = true

@@ -1,0 +1,44 @@
+# Three-node cluster for chaos experiments. `cap_add: NET_ADMIN` lets the
+# netem scripts shape traffic inside each container.
+#
+#   docker compose -f chaos/docker-compose.yml up --build -d
+#   docker exec chaos-kv1-1 kvctl --cluster kv1:6000,kv2:6000,kv3:6000 status
+#   chaos/partition.sh kv1          # isolate node 1
+#   chaos/partition.sh --heal kv1
+x-node: &node
+  build:
+    context: ..
+    dockerfile: chaos/Dockerfile
+  cap_add: [NET_ADMIN]
+  networks: [raft]
+
+services:
+  kv1:
+    <<: *node
+    command: >-
+      --id 1 --peers 1=kv1:7000,2=kv2:7000,3=kv3:7000
+      --client-listen 0.0.0.0:6000 --data-dir /data --metrics 0.0.0.0:9100
+    ports: ["6001:6000", "9101:9100"]
+    volumes: [kv1data:/data]
+  kv2:
+    <<: *node
+    command: >-
+      --id 2 --peers 1=kv1:7000,2=kv2:7000,3=kv3:7000
+      --client-listen 0.0.0.0:6000 --data-dir /data --metrics 0.0.0.0:9100
+    ports: ["6002:6000", "9102:9100"]
+    volumes: [kv2data:/data]
+  kv3:
+    <<: *node
+    command: >-
+      --id 3 --peers 1=kv1:7000,2=kv2:7000,3=kv3:7000
+      --client-listen 0.0.0.0:6000 --data-dir /data --metrics 0.0.0.0:9100
+    ports: ["6003:6000", "9103:9100"]
+    volumes: [kv3data:/data]
+
+networks:
+  raft: {}
+
+volumes:
+  kv1data: {}
+  kv2data: {}
+  kv3data: {}

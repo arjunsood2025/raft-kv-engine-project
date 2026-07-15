@@ -1,0 +1,11 @@
+/target
+**/target
+*.log
+/data
+.DS_Store
+
+# Prep
+CLAUDE.md
+GUIDE.md
+PROGRESS.md
+.claude

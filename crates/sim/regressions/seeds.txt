@@ -1,0 +1,10 @@
+# Regression seed corpus.
+#
+# Every seed that ever exposed a bug is recorded here with the bug it found;
+# the sim test suite replays all of them on every CI run. Format:
+#   <seed>   # <bug it reproduced>
+#
+# (Seeds are appended by hand when a sweep fails; see docs/BUGS.md for the
+# full root-cause writeups.)
+
+6   # snapshot-transfer wedge: dropped InstallSnapshot(Resp) left pending_snapshot set forever; leader stopped sending anything (even heartbeats) to that follower — node froze at its snapshot index for the rest of the run
