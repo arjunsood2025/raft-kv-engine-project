@@ -128,10 +128,11 @@ impl Core {
             self.handle_event(ev);
             // Group commit: drain everything already queued before touching
             // the disk, so all their raft output shares one fsynced batch.
-            // Measured on the load benchmark (16 clients, localhost): one
-            // fsync per proposal = 455 ops/sec; grouped = see PROGRESS.md.
-            // The budget bounds worst-case latency for the first request in
-            // the batch.
+            // Grouped load throughput is measured at ~1,320 ops/sec (16
+            // clients, localhost; see the README performance section). The
+            // one-fsync-per-proposal baseline is not measured on this bench —
+            // it needs a build with grouping disabled. The budget bounds
+            // worst-case latency for the first request in the batch.
             let mut budget = 512;
             while budget > 0 {
                 match rx.try_recv() {

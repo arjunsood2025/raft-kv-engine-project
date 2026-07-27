@@ -8,3 +8,4 @@
 # full root-cause writeups.)
 
 6   # snapshot-transfer wedge: dropped InstallSnapshot(Resp) left pending_snapshot set forever; leader stopped sending anything (even heartbeats) to that follower — node froze at its snapshot index for the rest of the run
+19519   # committed-entry loss: InstallSnapshot for a PREFIX of the follower's log cleared the whole log, silently retracting an acked-but-uncommitted entry the leader was already counting toward its majority; leader committed index 422 that survived on one node, and the next election legitimately overwrote it (STATE MACHINE SAFETY VIOLATION)

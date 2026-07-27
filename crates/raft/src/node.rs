@@ -917,6 +917,27 @@ impl RaftNode {
             });
             return;
         }
+        // §7: a snapshot whose last entry we already hold describes a PREFIX
+        // of our log. Resetting to it would drop the suffix — entries we have
+        // already persisted and ACKED, which the leader is counting toward its
+        // commit majority. It would then commit an entry that survives on no
+        // one, and a later election can legitimately overwrite it. Keep the
+        // suffix; adopt only the snapshot's commit point.
+        // (Found by simulation: seed 19519.)
+        if self.log.term(snapshot.last_index) == Some(snapshot.last_term) {
+            self.advance_commit_to(snapshot.last_index);
+            self.out.messages.push(Message {
+                from: self.cfg.id,
+                to: from,
+                term: self.hs.term,
+                body: MessageBody::InstallSnapshotResp {
+                    // Only claim what the snapshot proves we match; our
+                    // suffix above it is not known to agree with the leader.
+                    last_index: snapshot.last_index,
+                },
+            });
+            return;
+        }
         self.log
             .reset_to_snapshot(snapshot.last_index, snapshot.last_term);
         self.commit = snapshot.last_index;

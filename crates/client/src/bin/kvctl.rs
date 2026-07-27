@@ -56,6 +56,17 @@ fn opt_bytes(s: &str) -> Option<Vec<u8>> {
     }
 }
 
+/// Write one line to stdout; returns false once the reader has gone away.
+/// `println!` panics on a closed pipe, so a reader that exits early
+/// (`kvctl status | grep -m1 ...`) would otherwise fail the writer too.
+fn emit(line: String) -> bool {
+    use std::io::Write;
+    match writeln!(std::io::stdout(), "{line}") {
+        Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => false,
+        _ => true,
+    }
+}
+
 fn usage() -> ! {
     eprintln!(
         "usage: kvctl --cluster host:port,host:port,... <put|get|del|cas|scan|status> [args]"
@@ -124,19 +135,21 @@ async fn main() {
                 .await
                 .map(|kvs| {
                     for (k, v) in &kvs {
-                        println!(
+                        if !emit(format!(
                             "{}\t{}",
                             String::from_utf8_lossy(k),
                             String::from_utf8_lossy(v)
-                        );
+                        )) {
+                            return;
+                        }
                     }
-                    println!("({} keys)", kvs.len());
+                    emit(format!("({} keys)", kvs.len()));
                 })
                 .map_err(Into::into)
         }
         ("status", []) => {
             for (i, addr) in cluster.iter().enumerate() {
-                match kv.status_of(addr).await {
+                let line = match kv.status_of(addr).await {
                     Ok(Response::Status {
                         id,
                         role,
@@ -146,12 +159,15 @@ async fn main() {
                         applied,
                         last_log_index,
                         voters,
-                    }) => println!(
+                    }) => format!(
                         "node {id} @ {addr}: {role} term={term} leader={leader:?} \
                          commit={commit} applied={applied} last_log={last_log_index} voters={voters:?}"
                     ),
-                    Ok(other) => println!("node {} @ {addr}: unexpected {other:?}", i + 1),
-                    Err(e) => println!("node {} @ {addr}: DOWN ({e})", i + 1),
+                    Ok(other) => format!("node {} @ {addr}: unexpected {other:?}", i + 1),
+                    Err(e) => format!("node {} @ {addr}: DOWN ({e})", i + 1),
+                };
+                if !emit(line) {
+                    break;
                 }
             }
             Ok(())

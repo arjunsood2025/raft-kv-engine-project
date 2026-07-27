@@ -20,8 +20,10 @@ export RAFTKV_BACKOFF_BASE_MS=10 RAFTKV_BACKOFF_CAP_MS=200 RAFTKV_MAX_ATTEMPTS=6
 
 times=()
 for round in $(seq 1 "$ROUNDS"); do
-  LEADER=$("$KVCTL" --cluster "$CLUSTER" status 2>/dev/null \
-    | grep -m1 " Leader " | sed 's/node \([0-9]*\).*/\1/')
+  # Capture first, then match: piping kvctl straight into `grep -m1` lets the
+  # reader close the pipe mid-print, which under `pipefail` fails the round.
+  STATUS=$("$KVCTL" --cluster "$CLUSTER" status 2>/dev/null)
+  LEADER=$(printf '%s\n' "$STATUS" | grep -m1 " Leader " | sed 's/node \([0-9]*\).*/\1/')
   PID=$(awk -v n="node$LEADER" '$1==n {print $2}' data/pids.txt | tail -1)
   kill -9 "$PID" 2>/dev/null || true
   START=$(date +%s%N)

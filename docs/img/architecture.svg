@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 940 620" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#898781"/>
+    </marker>
+    <style>
+      .title { font-size: 21px; font-weight: 700; fill: #0b0b0b; }
+      .sub   { font-size: 12.5px; fill: #898781; }
+      .h     { font-size: 15px; font-weight: 600; fill: #0b0b0b; }
+      .d     { font-size: 12px; fill: #52514e; }
+      .lbl   { font-size: 11.5px; fill: #52514e; }
+      .foot  { font-size: 12px; fill: #52514e; font-style: italic; }
+      .box   { fill: #ffffff; stroke: #e1e0d9; stroke-width: 1.2; }
+      .core  { fill: #eaf2fc; stroke: #cfe0f7; stroke-width: 1.2; }
+      .accent{ fill: #2a78d6; }
+      .accentc{ fill: #184f95; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="940" height="620" rx="10" fill="#fcfcfb"/>
+
+  <text x="34" y="42" class="title">raft-kv — layered architecture</text>
+  <text x="34" y="64" class="sub">one node shown; deployed as three Raft-replicated peers</text>
+
+  <!-- Clients -->
+  <rect class="box" x="30" y="86" width="856" height="82" rx="10"/>
+  <rect class="accent" x="30" y="96" width="6" height="62" rx="3"/>
+  <text x="52" y="118" class="h">Clients</text>
+  <text x="52" y="140" class="d">kvctl CLI · loadgen · client library</text>
+  <text x="52" y="158" class="d">leader routing · retries with jitter · dedup-safe sessions</text>
+
+  <!-- TCP connector -->
+  <line x1="458" y1="168" x2="458" y2="204" stroke="#898781" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="470" y="191" class="lbl">length-prefixed bincode over TCP</text>
+
+  <!-- Server -->
+  <rect class="box" x="30" y="204" width="856" height="82" rx="10"/>
+  <rect class="accent" x="30" y="214" width="6" height="62" rx="3"/>
+  <text x="52" y="236" class="h">Server — tokio host <tspan class="d">(crates/server)</tspan></text>
+  <text x="52" y="258" class="d">single-owner event loop · group commit</text>
+  <text x="52" y="276" class="d">consistency modes: ReadIndex · leader lease · stale</text>
+
+  <!-- kvsm -->
+  <rect class="box" x="30" y="298" width="856" height="82" rx="10"/>
+  <rect class="accent" x="30" y="308" width="6" height="62" rx="3"/>
+  <text x="52" y="330" class="h">kvsm — replicated state machine</text>
+  <text x="52" y="352" class="d">client sessions · idempotent apply</text>
+  <text x="52" y="370" class="d">at-least-once delivery + dedup = exactly-once effect</text>
+
+  <!-- raft (core) -->
+  <rect class="core" x="30" y="392" width="856" height="82" rx="10"/>
+  <rect class="accentc" x="30" y="402" width="6" height="62" rx="3"/>
+  <text x="52" y="424" class="h">raft — sans-IO consensus core</text>
+  <text x="52" y="446" class="d">pre-vote elections · pipelined replication · ReadIndex / lease reads</text>
+  <text x="52" y="464" class="d">snapshots + InstallSnapshot · single-server membership changes</text>
+
+  <!-- storage -->
+  <rect class="box" x="30" y="486" width="856" height="82" rx="10"/>
+  <rect class="accent" x="30" y="496" width="6" height="62" rx="3"/>
+  <text x="52" y="508" class="h">storage — LSM engine</text>
+  <text x="52" y="530" class="d">WAL (CRC, torn-write recovery) · memtable · SSTables (bloom filters)</text>
+  <text x="52" y="548" class="d">leveled compaction · MVCC snapshots</text>
+
+  <!-- node bracket -->
+  <path d="M 896,204 h8 V568 h-8" fill="none" stroke="#898781" stroke-width="1.4"/>
+  <text x="922" y="386" class="lbl" text-anchor="middle" transform="rotate(90 922 386)">one node · kvd · ×3 replicas</text>
+
+  <text x="34" y="600" class="foot">The raft core is sans-IO — the same code runs under the tokio host (production) and the deterministic simulator (tests).</text>
+</svg>
