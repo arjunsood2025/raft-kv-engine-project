@@ -237,7 +237,7 @@ target/release/kvctl --cluster ... get hello --consistency lease
 chaos/kill-leader.sh 5                 # failover distribution, 5 kills
 ```
 
-## Design tradeoffs (the short list)
+## Design tradeoffs
 
 - **fsync before ack, always, on the raft log** — losing an acked entry or
   re-casting a vote breaks safety; the WAL batches an entire event-loop
@@ -255,12 +255,5 @@ chaos/kill-leader.sh 5                 # failover distribution, 5 kills
   simpler protocol whose edge cases are actually testable. Joint consensus
   is the multi-change generalization.
 
-## What I would build next
-
-Spread stale reads across replicas (today every client pins to `addrs[0]`,
-so the one mode that *could* scale horizontally doesn't — the fix is a
-per-client starting offset plus rotation on the stale path); multi-group
-sharding with a shard-map config service and migration cutover; transactions
-(2PC over raft groups, then percolator-style); lease-based clocks (bound the
 lease-read anomaly with measured clock error); io_uring on the storage path;
 coverage-guided schedule exploration in the simulator.
