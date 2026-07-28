@@ -237,7 +237,7 @@ target/release/kvctl --cluster ... get hello --consistency lease
 chaos/kill-leader.sh 5                 # failover distribution, 5 kills
 ```
 
-## Design tradeoffs (the short list)
+## Design tradeoffs
 
 - **fsync before ack, always, on the raft log.** Losing an acked entry or
   re-casting a vote breaks safety; the WAL batches an entire event-loop
